@@ -1,0 +1,10 @@
+create table freetickets
+(
+    FreeTicketsId   int auto_increment
+        primary key,
+    NumberOfTickets int                         not null,
+    EventId         int                         not null,
+    TicketType      varchar(30) default 'space' null,
+    constraint FreeTicketsEvent_FK
+        foreign key (EventId) references event (EventId)
+);

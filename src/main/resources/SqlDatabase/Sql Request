@@ -1,0 +1,40 @@
+    create table Event(EventId int not null auto_increment primary key,EventName varchar(30));
+    create table Tickets(TicketId int not null primary key auto_increment,EventId int not null,
+    FOREIGN KEY (EventId) REFERENCES Event(EventId));
+
+    alter table tickets add column TicketType varchar(30) not null;
+    alter table event add unique(EventName);
+
+    delete from event where EventName='Rhcp';
+    select *  from event;
+    alter table tickets ALTER TicketType set default 'space';
+
+    select TicketId,TicketType,EventName from tickets inner join event e on tickets.EventId = e.EventId;
+    select * from tickets natural join event e ;
+    #Add new tickets
+     CREATE procedure addTickets(in tickets int,in name VARCHAR(30),in ticketType VARCHAR(30))
+     BEGIN
+         l:while tickets >=0 do
+              insert  into tickets (EventId,TicketType) values((select EventId from event where EventName=name),ticketType);
+             set tickets=tickets - 1;
+        end while l;
+     end;
+
+
+     create TABLE Users(UserId INT not null primary key,UserNickName varchar(20) not null);
+    ALTER TABLE users add UNIQUE INDEX(UserNickName);
+    ALTER TABLE tickets add column UserId int default NULL ;
+    ALTER TABLE tickets add constraint UserFk FOREIGN KEY (UserId) references users(UserId);
+    CREATE TABLE FreeTickets(FreeTicketsId Int not null primary key,NumberOfTickets int not null,
+                             EventId Int not null,TicketType varchar(30) default 'space');
+    ALTER TABLE FreeTickets add constraint FreeTicketsEvent_FK foreign key (EventId) references event(EventId);
+    ALTER TABLE tickets drop column TicketType;
+    ALTER TABLE tickets add column FreeTicketsId int not null;
+    ALTER TABLE tickets add constraint FreeTickets_fk foreign key(FreeTicketsId) references FreeTickets(FreeTicketsId);
+
+    #ALTER table freetickets add FreeTicketsId int not null auto_increment primary key first;
+
+    #Trigger for add new Tickets.sql
+    CREATE TRIGGER UpdatingTicketsAfter  AFTER insert ON freetickets
+        for each row
+        call addTickets(NEW.NumberOfTickets,NEW.EventId,NEW.TicketType);

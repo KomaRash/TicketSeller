@@ -1,0 +1,14 @@
+<component name="ProjectCodeStyleConfiguration">
+  <code_scheme name="Project" version="173">
+    <ScalaCodeStyleSettings>
+      <option name="alwaysUsedImports">
+        <array>
+          <option value="org.http4s.dsl" />
+          <option value="org.scalatest._" />
+          <option value="scala.collection.convert.decorateAsScala._" />
+          <option value="sqlContext.implicits._" />
+        </array>
+      </option>
+    </ScalaCodeStyleSettings>
+  </code_scheme>
+</component>
