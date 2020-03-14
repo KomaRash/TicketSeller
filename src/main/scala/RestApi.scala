@@ -7,26 +7,36 @@ import akka.util.Timeout
 import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
 
 import scala.concurrent.{ExecutionContext, Future}
-class RestApi(system: ActorSystem, timeout: Timeout) extends BoxOfficeApi with JsonMarshaling {
-
-  import akka.http.scaladsl.model.StatusCodes._
+class RestApi(system: ActorSystem, timeout: Timeout) extends BoxOfficeApi with JsonCodec {
   override implicit def executionContext: ExecutionContext = system.dispatcher
   override implicit def requestTimeout: Timeout = timeout
   override def createBoxOffice(): ActorRef =system.actorOf(BoxOffice.property,BoxOffice.name)
 
-  def eventsRoute=pathPrefix("events"){
-    pathEndOrSingleSlash{
-      get{
-      onSuccess(getEvents()) {
-        case GetEventsResponse(eventList) => complete(eventList)
-        case CancelEventResponse=> complete(BadRequest)
-      }
+  def eventsRoute=pathPrefix("events") {
+    pathEndOrSingleSlash {
+      get {
+        onSuccess(getEvents()) {
+          case GetEventsResponse(eventList) => complete(eventList)
+          case CancelEventResponse(message) => complete(message)
+        }
       }
     }
   }
+  def eventRoute=pathPrefix("events"/Segment){
+    event=>
+      pathEndOrSingleSlash{
+        get{
+          onSuccess(getEvent(fromUriToEvent(event))) {
+            case GetEventResponse(event) => complete(event)
+            case CancelEventResponse(message) => complete(message)
+          }
+        }
+      }
+    }
 
 
-  def routes:Route=eventsRoute
+
+  def routes:Route=eventsRoute~eventRoute
 }
 
 trait BoxOfficeApi{
@@ -43,8 +53,12 @@ trait BoxOfficeApi{
   def getEvents(): Future[EventResponse] =
     boxOffice.ask(GetEvents).mapTo[EventResponse]
 
-  def getEvent(eventName: String): Future[EventResponse] =
-    boxOffice.ask().mapTo[EventResponse]
+  def getEvent(event: Either[String,Event]): Future[EventResponse] = {
+    event match {
+      case Right(value) =>    boxOffice.ask(GetEvent(value)).mapTo[EventResponse]
+      case Left(value) =>  Future{CancelEventResponse(value)}
+    }
+   }
 
 
 }

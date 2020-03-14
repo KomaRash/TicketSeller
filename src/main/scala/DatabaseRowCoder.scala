@@ -1,7 +1,8 @@
-import EventOperations.{Event, EventInfo, Ticket}
-import cats.instances.function._
-import cats.syntax.functor._
+import EventOperations.{Event, EventDateTime, EventInfo, Ticket}
+import cats.implicits._
+import org.joda.time.LocalDateTime
 import scalikejdbc.WrappedResultSet
+import scalikejdbc.jodatime.JodaTypeBinder._
 trait DatabaseRowCoder {
 
   implicit class WrappedResultSetOpt( result: WrappedResultSet) {
@@ -16,7 +17,7 @@ trait DatabaseRowCoder {
         result.string("EventName"),
         None,
         None,
-        result.dateTimeOpt("DATETIME").map(_.toLocalDateTime))
+        EventDateTime(result.get[LocalDateTime]("DATETIME")))
     def toPlaceWithoutId: () => Option[Place] = ()=>Option(
       Place( name=result.string("Name"),
         address=result.string("Address")))

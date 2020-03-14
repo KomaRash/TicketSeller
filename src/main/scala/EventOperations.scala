@@ -1,4 +1,4 @@
-import java.time.LocalDateTime
+import org.joda.time.LocalDateTime
 
 
 object EventOperations {
@@ -7,9 +7,10 @@ object EventOperations {
                     name:String,
                     eventInfo: Option[EventInfo]=None,
                     place:Option[Place]=None,
-                    dateTime: Option[LocalDateTime])
-  case class EventInfo(/*tickets:Map[TicketType,Int],*/preview:Option[String])
+                    dateTime:EventDateTime )
 
+  case class EventInfo(/*tickets:Map[TicketType,Int],*/preview:Option[String])
+  case class EventDateTime(dateTime:LocalDateTime)
   case class Ticket(event:String,ticketId: Int,ticketType:TicketType)
 
 
@@ -24,8 +25,9 @@ object EventOperations {
 
   sealed trait EventResponse
 
+
   case class CreateEventResponse(event: Event) extends EventResponse
-  case object CancelEventResponse extends EventResponse
+  case class CancelEventResponse(message:String = "fail") extends EventResponse
   case class GetEventsResponse(eventList:List[Event]) extends EventResponse
   case class GetEventResponse(event: Event) extends EventResponse
 

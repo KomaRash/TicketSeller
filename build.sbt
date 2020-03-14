@@ -1,4 +1,4 @@
-name := "Akka-WebShop-Dota2"
+name := "TicketSeller"
 
 version := "0.1"
 
@@ -7,8 +7,7 @@ scalacOptions ++= Seq(
   "-deprecation",
   "-encoding", "UTF-8",
   "-feature",
-  "-unchecked"
-
+  "unchecked"
 )
 //Akka
 val akkaVersion = "2.6.3"

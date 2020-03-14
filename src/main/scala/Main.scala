@@ -1,5 +1,4 @@
 
-
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.Http.ServerBinding
@@ -8,7 +7,7 @@ import com.typesafe.config.{Config, ConfigFactory}
 
 import scala.concurrent.Future
 
-object Main extends App  with RequestTimeout with JsonMarshaling {
+object Main extends App  with RequestTimeout with JsonCodec {
   val config = ConfigFactory.load()
   val host = config.getString("http.host") // Gets the host and a port from the configuration
   val port = config.getInt("http.port")
