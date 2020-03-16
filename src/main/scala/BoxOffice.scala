@@ -1,4 +1,4 @@
-import EventOperations.{GetEvent, GetEvents}
+import Operations.EventOperations.{GetEvent, GetEvents}
 import akka.actor.{Actor, Props}
 import akka.util.Timeout
 
@@ -17,8 +17,8 @@ class BoxOffice(implicit timeout: Timeout) extends Actor {
  import akka.pattern.{ask, pipe}
  override def receive: Receive = {
 
-  case GetEvents=> database.ask(GetEvents) pipeTo sender()
-  case getEvent:GetEvent=>database.ask(getEvent) pipeTo sender()
+  case getEvents: GetEvents[_]=> database.ask(getEvents) pipeTo sender()
+  case getEvent: GetEvent[_]=>database.ask(getEvent) pipeTo sender()
   }
 
 }

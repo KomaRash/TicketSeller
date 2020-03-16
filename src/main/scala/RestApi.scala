@@ -1,4 +1,4 @@
-import EventOperations._
+import Operations.EventOperations._
 import akka.actor.{ActorRef, ActorSystem}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
@@ -7,7 +7,7 @@ import akka.util.Timeout
 import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
 
 import scala.concurrent.{ExecutionContext, Future}
-class RestApi(system: ActorSystem, timeout: Timeout) extends BoxOfficeApi with JsonCodec {
+class RestApi(system: ActorSystem, timeout: Timeout) extends BoxOfficeApi with JsonCodec with UriDecoder {
   override implicit def executionContext: ExecutionContext = system.dispatcher
   override implicit def requestTimeout: Timeout = timeout
   override def createBoxOffice(): ActorRef =system.actorOf(BoxOffice.property,BoxOffice.name)

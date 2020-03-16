@@ -1,4 +1,5 @@
-import EventOperations.{Event, EventDateTime, EventInfo, Ticket}
+import Operations.EventOperations.{Event, EventDateTime, EventInfo, Ticket}
+import Operations.Place
 import cats.implicits._
 import org.joda.time.LocalDateTime
 import scalikejdbc.WrappedResultSet

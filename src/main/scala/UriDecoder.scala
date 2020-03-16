@@ -1,7 +1,7 @@
-import EventOperations.EventDateTime
+import Operations.EventOperations.EventDateTime
 
 trait UriDecoder extends DateTimeCodec{
-  import EventOperations.Event
+  import Operations.EventOperations.Event
   import org.joda.time.LocalDateTime
 
   def fromUriToEvent(uriPath:String):Either[String,Event]=uriPath.split("--").toList match {

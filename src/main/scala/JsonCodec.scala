@@ -1,4 +1,5 @@
-import EventOperations.{Event, EventDateTime, EventInfo}
+import Operations.EventOperations.{Event, EventDateTime, EventInfo}
+import Operations.Place
 import org.joda.time.LocalDateTime
 trait JsonCodec extends DateTimeCodec {
   import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}

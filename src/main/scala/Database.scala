@@ -1,4 +1,4 @@
-import EventOperations._
+import Operations.EventOperations._
 import Main.config
 import akka.actor.{Actor, Props}
 import scalikejdbc._ // for Functor import cats.syntax.functor.__
@@ -18,20 +18,22 @@ object Database extends DatabaseRowCoder {
 }
 class Database() extends Actor{
   import Database._
-  def getEvents= GetEventsResponse(sql""" select * from event""".map(_.toEventWithoutInfo()).list().apply())
+  def getEvents= (sql""" select * from event""".map(_.toEventWithoutInfo()).list().apply())
   def getEvent(event: Event)= {
     println(event)
     sql""" select * from event natural join place where
-        EventName=${event.name}""".map(_.toUserEventInfo()).single().apply() match{
-      case Some(value) => GetEventResponse(value)
-      case None =>CancelEventResponse
-    }
+        EventName=${event.name} and DATETIME=${event.dateTime}""".map(_.toUserEventInfo()).single().apply()
 
 
   }
   override def receive: Receive = {
   //  case CreateEvent(event,tickets,ticketType)=>sender()! addEvent(event,ticketType,tickets)
-    case GetEvent(event)=>sender() ! getEvent(event)
-    case GetEvents=>sender() ! getEvents
+    case GetEvent(event,user)=>sender() ! {
+      getEvent(event) match {
+        case Some(value) => GetEventResponse(value, user)
+        case None => CancelEventResponse("Event not Found",user)
+      }
+    }
+    case GetEvents(user)=>sender() ! GetEventsResponse(getEvents,user)
   }
 }

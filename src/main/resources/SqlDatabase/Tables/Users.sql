@@ -5,4 +5,4 @@ create table users
     UserNickName varchar(20) not null,
     UserMail varchar(254) not null
 );
-alter table users add column Role varchar(30) default 'User';
+alter table users add column Operations.Role varchar(30) default 'Operations.User';
