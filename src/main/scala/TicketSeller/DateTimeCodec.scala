@@ -1,3 +1,5 @@
+package TicketSeller
+
 import org.joda.time.format.{DateTimeFormat, DateTimeFormatter}
 
 trait DateTimeCodec {

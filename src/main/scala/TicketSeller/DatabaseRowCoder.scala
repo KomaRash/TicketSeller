@@ -1,9 +1,12 @@
-import Operations.EventOperations.{Event, EventDateTime, EventInfo, Ticket}
-import Operations.Place
-import cats.implicits._
+package TicketSeller
+
+import TicketSeller.Operations.EventOperations.{Event, EventDateTime, EventInfo, Ticket}
+import TicketSeller.Operations.Place
 import org.joda.time.LocalDateTime
 import scalikejdbc.WrappedResultSet
+import cats.implicits._
 import scalikejdbc.jodatime.JodaTypeBinder._
+
 trait DatabaseRowCoder {
 
   implicit class WrappedResultSetOpt( result: WrappedResultSet) {

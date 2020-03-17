@@ -9,6 +9,10 @@ scalacOptions ++= Seq(
   "-feature",
   "unchecked"
 )
+
+scalacOptions += "-language:higherKinds"
+addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.11.0" cross CrossVersion.full)
+
 //Akka
 val akkaVersion = "2.6.3"
 libraryDependencies ++= Seq(

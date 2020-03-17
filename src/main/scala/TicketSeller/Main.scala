@@ -1,3 +1,5 @@
+package TicketSeller
+
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
@@ -11,6 +13,7 @@ object Main extends App  with RequestTimeout with JsonCodec {
   val config = ConfigFactory.load()
   val host = config.getString("http.host") // Gets the host and a port from the configuration
   val port = config.getInt("http.port")
+  println(port)
   implicit val system = ActorSystem()
   implicit val ее = system.dispatcher
   val api=new RestApi(system,requestTimeout(config)).routes

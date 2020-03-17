@@ -1,4 +1,4 @@
-package Operations
+package TicketSeller.Operations
 object AccessLevel {
   type AccessLevel
   type Anon <: AccessLevel

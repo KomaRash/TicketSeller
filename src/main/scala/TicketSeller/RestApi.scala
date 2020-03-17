@@ -1,4 +1,7 @@
-import Operations.EventOperations._
+package TicketSeller
+import TicketSeller.Operations.AccessLevel.AccessLevel
+import TicketSeller.Operations.EventOperations._
+import TicketSeller.Operations.{Role, Unauthorized}
 import akka.actor.{ActorRef, ActorSystem}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
@@ -7,6 +10,7 @@ import akka.util.Timeout
 import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
 
 import scala.concurrent.{ExecutionContext, Future}
+
 class RestApi(system: ActorSystem, timeout: Timeout) extends BoxOfficeApi with JsonCodec with UriDecoder {
   override implicit def executionContext: ExecutionContext = system.dispatcher
   override implicit def requestTimeout: Timeout = timeout
@@ -15,9 +19,9 @@ class RestApi(system: ActorSystem, timeout: Timeout) extends BoxOfficeApi with J
   def eventsRoute=pathPrefix("events") {
     pathEndOrSingleSlash {
       get {
-        onSuccess(getEvents()) {
-          case GetEventsResponse(eventList) => complete(eventList)
-          case CancelEventResponse(message) => complete(message)
+        onSuccess(getEvents(Unauthorized)) {
+          case GetEventsResponse(eventList,user) => complete(eventList)
+          case CancelEventResponse(message,user) => complete(message)
         }
       }
     }
@@ -26,9 +30,9 @@ class RestApi(system: ActorSystem, timeout: Timeout) extends BoxOfficeApi with J
     event=>
       pathEndOrSingleSlash{
         get{
-          onSuccess(getEvent(fromUriToEvent(event))) {
-            case GetEventResponse(event) => complete(event)
-            case CancelEventResponse(message) => complete(message)
+          onSuccess(getEvent(fromUriToEvent(event),Unauthorized)) {
+            case GetEventResponse(event,user) => complete(event)
+            case CancelEventResponse(message,user) => complete(message)
           }
         }
       }
@@ -47,16 +51,13 @@ trait BoxOfficeApi{
 
   def createBoxOffice():ActorRef
 
-  def createEvent(event:Event,tickets:Int,ticketType: TicketType): Future[EventResponse] =
-    boxOffice.ask(CreateEvent(event,tickets,ticketType)).mapTo[EventResponse]
+  def getEvents[T <: AccessLevel](user:Role[T]): Future[EventResponse[T]] =
+    boxOffice.ask(GetEvents(user)).mapTo[EventResponse[T]]
 
-  def getEvents(): Future[EventResponse] =
-    boxOffice.ask(GetEvents).mapTo[EventResponse]
-
-  def getEvent(event: Either[String,Event]): Future[EventResponse] = {
+  def getEvent[T <: AccessLevel](event: Either[String,Event],user:Role[T]): Future[EventResponse[T]] = {
     event match {
-      case Right(value) =>    boxOffice.ask(GetEvent(value)).mapTo[EventResponse]
-      case Left(value) =>  Future{CancelEventResponse(value)}
+      case Right(value) => boxOffice.ask(GetEvent(value,user)).mapTo[EventResponse[T]]
+      case Left(value) =>  Future{CancelEventResponse(value,user)}
     }
    }
 

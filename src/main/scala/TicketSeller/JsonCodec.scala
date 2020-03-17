@@ -1,9 +1,12 @@
-import Operations.EventOperations.{Event, EventDateTime, EventInfo}
-import Operations.Place
+package TicketSeller
+
+import TicketSeller.Operations.EventOperations.{Event, EventDateTime, EventInfo}
+import TicketSeller.Operations.Place
 import org.joda.time.LocalDateTime
+
 trait JsonCodec extends DateTimeCodec {
-  import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
   import io.circe._
+  import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
   import io.circe.syntax._
   //Encoders
   implicit val eventEncoder: Encoder[Event] = deriveEncoder[Event].mapJsonObject(_.filter {

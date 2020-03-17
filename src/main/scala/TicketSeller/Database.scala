@@ -1,11 +1,12 @@
-import Operations.EventOperations._
-import Main.config
+package TicketSeller
+
+import TicketSeller.Operations.EventOperations._
 import akka.actor.{Actor, Props}
 import scalikejdbc._ // for Functor import cats.syntax.functor.__
 object Database extends DatabaseRowCoder {
-
+  import Main.config
   def name: String = "ticketsDatabase"
-  def property: Props = Props(new Database)
+  def property: Props = Props(new Database())
   val jdbc: String = config.getString("Database.url")
   val passwordDB: String = config.getString("Database.password")
   val userDB: String = config.getString("Database.user")
@@ -22,7 +23,7 @@ class Database() extends Actor{
   def getEvent(event: Event)= {
     println(event)
     sql""" select * from event natural join place where
-        EventName=${event.name} and DATETIME=${event.dateTime}""".map(_.toUserEventInfo()).single().apply()
+        EventName=${event.name} and DATETIME = ${event.dateTime.dateTime} """.map(_.toUserEventInfo()).single().apply()
 
 
   }
