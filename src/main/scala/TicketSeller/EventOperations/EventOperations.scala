@@ -1,8 +1,9 @@
-package TicketSeller.Operations
+package TicketSeller.EventOperations
 
+import scala.reflect.runtime.universe._
 import org.joda.time.LocalDateTime
 
-object EventOperations {
+package object EventOperations {
 
   case class  Event(id:Option[Int]=None,
                     name:String,
@@ -19,8 +20,8 @@ object EventOperations {
   /*case class CreateEvent[T](event: Event,tickets:Int,ticketType:TicketType) extends EventRequest[T]{
     require(tickets>0)
   }*/
-  case class GetEvent[AL<:AccessLevel.AccessLevel](event: Event,  user:Role[AL])extends EventRequest[AL]
-  case class GetEvents[AL<:AccessLevel.AccessLevel](user:Role[AL]) extends EventRequest[AL]
+  case class GetEvent[AL<:AccessLevel.AccessLevel](event: Event,  user:Role[AL],typeTag: Type=typeOf[AL])extends EventRequest[AL]
+  case class GetEvents[AL<:AccessLevel.AccessLevel](user:Role[AL],typeTag: Type=typeOf[AL]) extends EventRequest[AL]
   //case class GetTickets[AL](name:String,tickets:Int,user:Role[AL]) extends EventRequest[AL]
 
   sealed trait EventResponse[+AL<:AccessLevel.AccessLevel]

@@ -1,7 +1,7 @@
 package TicketSeller
-import TicketSeller.Operations.AccessLevel.AccessLevel
-import TicketSeller.Operations.EventOperations._
-import TicketSeller.Operations.{Role, Unauthorized}
+import TicketSeller.EventOperations.AccessLevel.AccessLevel
+import TicketSeller.EventOperations.EventOperations._
+import TicketSeller.EventOperations.{Role, Unauthorized}
 import akka.actor.{ActorRef, ActorSystem}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
@@ -11,10 +11,10 @@ import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class RestApi(system: ActorSystem, timeout: Timeout) extends BoxOfficeApi with JsonCodec with UriDecoder {
+class RestApi( system: ActorSystem, timeout: Timeout) extends BoxOfficeApi with JsonCodec with UriDecoder {
   override implicit def executionContext: ExecutionContext = system.dispatcher
   override implicit def requestTimeout: Timeout = timeout
-  override def createBoxOffice(): ActorRef =system.actorOf(BoxOffice.property,BoxOffice.name)
+  override def createBoxOffice(): ActorRef =system.actorOf(BoxOffice.property(system,requestTimeout),BoxOffice.name)
 
   def eventsRoute=pathPrefix("events") {
     pathEndOrSingleSlash {
@@ -51,12 +51,12 @@ trait BoxOfficeApi{
 
   def createBoxOffice():ActorRef
 
-  def getEvents[T <: AccessLevel](user:Role[T]): Future[EventResponse[T]] =
-    boxOffice.ask(GetEvents(user)).mapTo[EventResponse[T]]
+  def getEvents[AL <: AccessLevel](user:Role[AL]): Future[EventResponse[AL]] =
+    boxOffice.ask(GetEvents(user)).mapTo[EventResponse[AL]]
 
-  def getEvent[T <: AccessLevel](event: Either[String,Event],user:Role[T]): Future[EventResponse[T]] = {
+  def getEvent[AL <: AccessLevel](event: Either[String,Event],user:Role[AL]): Future[EventResponse[AL]] = {
     event match {
-      case Right(value) => boxOffice.ask(GetEvent(value,user)).mapTo[EventResponse[T]]
+      case Right(value) => boxOffice.ask(GetEvent(value,user)).mapTo[EventResponse[AL]]
       case Left(value) =>  Future{CancelEventResponse(value,user)}
     }
    }

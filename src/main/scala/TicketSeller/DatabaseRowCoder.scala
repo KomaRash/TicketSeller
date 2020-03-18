@@ -1,7 +1,7 @@
 package TicketSeller
 
-import TicketSeller.Operations.EventOperations.{Event, EventDateTime, EventInfo, Ticket}
-import TicketSeller.Operations.Place
+import TicketSeller.EventOperations.EventOperations.{Event, EventDateTime, EventInfo, Ticket}
+import TicketSeller.EventOperations.Place
 import org.joda.time.LocalDateTime
 import scalikejdbc.WrappedResultSet
 import cats.implicits._

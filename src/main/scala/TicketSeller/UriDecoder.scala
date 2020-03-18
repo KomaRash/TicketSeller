@@ -1,8 +1,8 @@
 package TicketSeller
-import TicketSeller.Operations.EventOperations.EventDateTime
+import TicketSeller.EventOperations.EventOperations.EventDateTime
 
 trait UriDecoder extends DateTimeCodec{
-  import TicketSeller.Operations.EventOperations.Event
+  import TicketSeller.EventOperations.EventOperations.Event
   import org.joda.time.LocalDateTime
 
   def fromUriToEvent(uriPath:String):Either[String,Event]=uriPath.split("--").toList match {

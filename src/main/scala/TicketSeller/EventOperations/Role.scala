@@ -1,4 +1,4 @@
-package TicketSeller.Operations
+package TicketSeller.EventOperations
 object AccessLevel {
   type AccessLevel
   type Anon <: AccessLevel
@@ -10,7 +10,7 @@ import AccessLevel._
 
 sealed trait Role[+AL <: AccessLevel]
 case object Unauthorized extends Role[Anon]
-case class User[+AL <: Authorized](
+  case class User[+AL <: Authorized](
                                     userNickName: String,
                                     userInfo: Option[UserInfo]
                                   ) extends Role[AL]

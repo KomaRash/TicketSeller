@@ -1,7 +1,8 @@
-package TicketSeller.Operations
+package TicketSeller.EventOperations
 
-import TicketSeller.Operations.EventOperations.Id
+import TicketSeller.EventOperations.EventOperations.Id
 
 case class Place(id:Option[Id]=None,
                  name:String,
                  address:String)
+

@@ -7,7 +7,7 @@ import akka.http.scaladsl.Http.ServerBinding
 import akka.util.Timeout
 import com.typesafe.config.{Config, ConfigFactory}
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContextExecutor, Future}
 
 object Main extends App  with RequestTimeout with JsonCodec {
   val config = ConfigFactory.load()
