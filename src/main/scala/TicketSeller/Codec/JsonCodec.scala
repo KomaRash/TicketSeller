@@ -1,4 +1,4 @@
-package TicketSeller
+package TicketSeller.Codec
 
 import TicketSeller.EventOperations.EventOperations.{Event, EventDateTime, EventInfo}
 import TicketSeller.EventOperations.Place

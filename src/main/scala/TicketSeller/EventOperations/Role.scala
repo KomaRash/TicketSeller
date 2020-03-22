@@ -5,15 +5,28 @@ object AccessLevel {
   type Authorized <: Anon
   type Redactor <: Authorized
   type Admin <: Redactor
+
+  type Token=String
 }
 import AccessLevel._
 
-sealed trait Role[+AL <: AccessLevel]
-case object Unauthorized extends Role[Anon]
+import scala.reflect.runtime.universe
+import scala.reflect.runtime.universe._
+sealed trait Role[+AL <: AccessLevel] {
+  def accessLevel: Type = ???
+}
+case object Unauthorized extends Role[Anon]{
+  override def accessLevel: universe.Type = typeOf[Anon]
+}
   case class User[+AL <: Authorized](
                                     userNickName: String,
-                                    userInfo: Option[UserInfo]
-                                  ) extends Role[AL]
+                                    userInfo: Option[UserInfo],
+                                    userToken: Option[UserToken]
+                                  ) extends Role[AL]{
+    override def accessLevel: universe.Type = typeOf[Authorized]
+  }
 
-case class UserInfo(userId: Int, userMail: String, password: String)
+case class UserToken(accessToken:Token,refreshToken:Token)
+
+case class UserInfo(userMail: String, password: String)
 

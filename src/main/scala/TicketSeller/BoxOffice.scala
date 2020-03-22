@@ -1,7 +1,6 @@
 package TicketSeller
 
-import TicketSeller.EventOperations.AccessLevel.Anon
-import TicketSeller.EventOperations.EventOperations.{EventRequest, GetEvent, GetEvents}
+import TicketSeller.EventOperations.EventOperations._
 import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 import akka.event.EventStream
 import akka.util.Timeout
@@ -16,22 +15,19 @@ def property(implicit system:ActorSystem,timeout: Timeout)=Props(new BoxOffice()
    Event(x.name, x.eventId, x.eventInfo |+| y.eventInfo)*/
 }
 class BoxOffice(implicit timeout: Timeout,system:ActorSystem ) extends Actor {
- lazy val database: ActorRef =context.actorOf(Database.property,Database.name)
+ implicit lazy val database: ActorRef =context.actorOf(Database.property,Database.name)
  val activeUsers:ActorRef=context.actorOf(ActiveUsers.property,ActiveUsers.name)
   lazy val eventStream: EventStream =system.eventStream
-  eventStream.subscribe(activeUsers,classOf[EventRequest[Anon]])
+  //eventStream.subscribe(activeUsers,classOf[EventRequest[Anon]])
   import BoxOffice._
   import akka.pattern.{ask, pipe}
  override def receive: Receive = {
 
   case getEvents @(_: GetEvents[_] | _:GetEvent[_])=>
     database.ask(getEvents) pipeTo sender()
-     eventStream.publish(getEvents)
-
-
-
+     //eventStream.publish(getEvents)
+  case authorizeUser:AuthorizeUserRequest[_]=>activeUsers.ask(authorizeUser)
  }
-
 }
 
 

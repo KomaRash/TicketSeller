@@ -1,4 +1,4 @@
-package TicketSeller
+package TicketSeller.Codec
 
 import org.joda.time.format.{DateTimeFormat, DateTimeFormatter}
 

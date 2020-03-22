@@ -1,21 +1,31 @@
 package TicketSeller
 
-import TicketSeller.EventOperations.AccessLevel._
-import TicketSeller.EventOperations.EventOperations.EventRequest
-import akka.actor.{Actor, Props}
-
-import scala.reflect.runtime.universe._
-
+import TicketSeller.EventOperations.EventOperations.{AuthorizeUserRequest, GetEvents}
+import TicketSeller.EventOperations.UserInfo
+import akka.actor.{Actor, ActorRef, Props}
+import akka.pattern.ask
+import akka.util.Timeout
 object ActiveUsers {
-  def property: Props = Props(new ActiveUsers())
+  def property(implicit database:ActorRef): Props = Props(new ActiveUsers(database))
 
   def name="ActiveUsers"
 
 }
-class ActiveUsers() extends Actor{
+class ActiveUsers(database:ActorRef) extends Actor with AuthorizeUserApi {
+
 
   override def receive: Receive = {
-    case eventRequest:EventRequest[]=>UserSort(eventRequest)
+    case eventRequest:(GetEvents[_]) =>println(eventRequest.user.accessLevel)
+    case authorizeUser:AuthorizeUserRequest[_]=>database.ask(authorizeUser.userInfo)
+  }
+
+
+}
+
+trait AuthorizeUserApi extends AuthorizeTimeout {
+  implicit val timeout: Timeout =userAskTimeout
+  def generateToken(userInfo: UserInfo)= {
+
   }
 
 }

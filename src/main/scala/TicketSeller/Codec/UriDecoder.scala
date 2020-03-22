@@ -1,4 +1,5 @@
-package TicketSeller
+package TicketSeller.Codec
+
 import TicketSeller.EventOperations.EventOperations.EventDateTime
 
 trait UriDecoder extends DateTimeCodec{
