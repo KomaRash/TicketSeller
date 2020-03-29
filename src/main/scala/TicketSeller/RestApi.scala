@@ -1,8 +1,8 @@
 package TicketSeller
-import TicketSeller.EventOperations.AccessLevel.{AccessLevel, Authorized}
-import TicketSeller.EventOperations.EventOperations._
-import TicketSeller.EventOperations.{Role, Unauthorized, User, UserInfo}
 import TicketSeller.Codec.{JsonCodec, UriDecoder}
+import TicketSeller.EventOperations.AccessLevel.AccessLevel
+import TicketSeller.EventOperations.EventOperations._
+import TicketSeller.EventOperations.{Role, Unauthorized, UserInfo}
 import akka.actor.{ActorRef, ActorSystem}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
@@ -43,8 +43,8 @@ class RestApi( system: ActorSystem, timeout: Timeout) extends BoxOfficeApi
   def authorizeRoute=pathPrefix("users"){
     pathEndOrSingleSlash{
       get{
-        entity(as[User[Authorized]]){
-            user=>authorizeUser(user)
+        entity(as[UserInfo]){
+            userInfo=>complete(authorizeUser(userInfo))
         }
       }
     }
@@ -72,11 +72,12 @@ trait BoxOfficeApi{
       case Left(value) =>  Future{CancelEventResponse(value,user)}
     }
    }
-  def authorizeUser(user:User[Authorized])={
-    user.userInfo match {
+  def authorizeUser[AL <: AccessLevel](userInfo:UserInfo): Future[EventResponse[AL]] ={
+    boxOffice.ask(userInfo).mapTo[EventResponse[AL]]
+    /*userInfo match {
       case Some(userInfo) => boxOffice.ask(AuthorizeUserRequest(userInfo))
       case None =>
-    }
+    }*/
   }
 
 

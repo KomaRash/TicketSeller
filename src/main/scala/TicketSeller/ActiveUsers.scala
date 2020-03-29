@@ -1,7 +1,6 @@
 package TicketSeller
 
-import TicketSeller.EventOperations.EventOperations.{AuthorizeUserRequest, GetEvents}
-import TicketSeller.EventOperations.UserInfo
+import TicketSeller.EventOperations.{User, UserInfo}
 import akka.actor.{Actor, ActorRef, Props}
 import akka.pattern.ask
 import akka.util.Timeout
@@ -13,10 +12,9 @@ object ActiveUsers {
 }
 class ActiveUsers(database:ActorRef) extends Actor with AuthorizeUserApi {
 
-
+  private val activeUserList=List[User]()
   override def receive: Receive = {
-    case eventRequest:(GetEvents[_]) =>println(eventRequest.user.accessLevel)
-    case authorizeUser:AuthorizeUserRequest[_]=>database.ask(authorizeUser.userInfo)
+    case userInfo: UserInfo=>database.ask(userInfo).mapTo[Option[User[_]]]
   }
 
 

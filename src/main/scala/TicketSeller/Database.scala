@@ -1,8 +1,8 @@
 package TicketSeller
 
+import TicketSeller.Codec.DatabaseRowCoder
 import TicketSeller.EventOperations.EventOperations._
 import TicketSeller.EventOperations.UserInfo
-import TicketSeller.Codec.DatabaseRowCoder
 import akka.actor.{Actor, Props}
 import scalikejdbc._ // for Functor import cats.syntax.functor.__
 object Database extends DatabaseRowCoder {
@@ -28,10 +28,8 @@ class Database() extends Actor{
 
 
   }
-  def getUser=
-    sql"""
-
-       """
+  def getUser(userInfo: UserInfo) =sql"""SELECT * FROM users where UserMail=${userInfo.userMail} and Password=${userInfo.password}
+       """.map(_.toUser).single().apply()
   override def receive: Receive = {
   //  case CreateEvent(event,tickets,ticketType)=>sender()! addEvent(event,ticketType,tickets)
     case GetEvent(event,user)=>sender() ! {
@@ -41,7 +39,7 @@ class Database() extends Actor{
       }
     }
     case GetEvents(user)=>sender() ! GetEventsResponse(getEvents,user)
-    case userInfo:UserInfo=>sender()
+    case userInfo:UserInfo=>getUser(userInfo)
   }
 
 }

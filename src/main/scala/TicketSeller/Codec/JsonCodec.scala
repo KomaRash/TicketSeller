@@ -1,7 +1,7 @@
 package TicketSeller.Codec
 
 import TicketSeller.EventOperations.EventOperations.{Event, EventDateTime, EventInfo}
-import TicketSeller.EventOperations.Place
+import TicketSeller.EventOperations.{Place, UserInfo}
 import org.joda.time.LocalDateTime
 
 trait JsonCodec extends DateTimeCodec {
@@ -27,6 +27,7 @@ trait JsonCodec extends DateTimeCodec {
   lazy implicit val localDateTimeDecoder: Decoder[EventDateTime] = (c: HCursor) => for {
     dateTime <- c.downField("datetime").as[String].map(LocalDateTime.parse(_, datetimeFormat))
   } yield EventDateTime(dateTime)
+  lazy implicit val userInfoDecoder:Decoder[UserInfo]=deriveDecoder[UserInfo]
   private def prepareDecoder(json: Json)(fieldType: String)(cursor: ACursor): ACursor = {
     val field = cursor.downField(fieldType)
     if (field.failed) {

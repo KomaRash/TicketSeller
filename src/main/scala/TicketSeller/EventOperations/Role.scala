@@ -8,25 +8,30 @@ object AccessLevel {
 
   type Token=String
 }
-import AccessLevel._
+import java.time.LocalDateTime
+
+import TicketSeller.EventOperations.AccessLevel._
 
 import scala.reflect.runtime.universe
 import scala.reflect.runtime.universe._
-sealed trait Role[+AL <: AccessLevel] {
-  def accessLevel: Type = ???
+
+  sealed trait Role[AL <: AccessLevel] {
+  def accessLevel:TypeTag[AL]= ???
 }
+
 case object Unauthorized extends Role[Anon]{
-  override def accessLevel: universe.Type = typeOf[Anon]
+  override def accessLevel: universe.TypeTag[Anon] = typeTag[Anon]
 }
-  case class User[+AL <: Authorized](
+case class User[AL <: Authorized](
                                     userNickName: String,
-                                    userInfo: Option[UserInfo],
-                                    userToken: Option[UserToken]
+                                    userInfo: Option[UserInfo]=None,
+                                    userToken: Option[UserToken]=None,
+                                    userRole:TypeTag[AL]
                                   ) extends Role[AL]{
-    override def accessLevel: universe.Type = typeOf[Authorized]
-  }
+  override def accessLevel: universe.TypeTag[AL] = typeTag[AL]
+}
 
-case class UserToken(accessToken:Token,refreshToken:Token)
+case class UserToken(accessToken:Token,refreshToken:Token,time:LocalDateTime)
 
-case class UserInfo(userMail: String, password: String)
+case class UserInfo(userMail: String, password: Option[String]=None)
 

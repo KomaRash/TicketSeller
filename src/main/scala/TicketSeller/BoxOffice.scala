@@ -26,7 +26,8 @@ class BoxOffice(implicit timeout: Timeout,system:ActorSystem ) extends Actor {
   case getEvents @(_: GetEvents[_] | _:GetEvent[_])=>
     database.ask(getEvents) pipeTo sender()
      //eventStream.publish(getEvents)
-  case authorizeUser:AuthorizeUserRequest[_]=>activeUsers.ask(authorizeUser)
+  /*case authorizeUser:AuthorizeUserRequest[_]=>activeUsers.ask(authorizeUser)*/
+  case eventInfo: EventInfo=>activeUsers.ask(eventInfo)
  }
 }
 

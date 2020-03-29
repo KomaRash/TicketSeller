@@ -8,13 +8,14 @@ import akka.http.scaladsl.Http.ServerBinding
 
 import scala.concurrent.Future
 
-object Main extends App  with RequestTimeout with JsonCodec {
+object Main extends App  with RequestTimeout
+                         with JsonCodec {
   val host = config.getString("http.host") // Gets the host and a port from the configuration
   val port = config.getInt("http.port")
     println(port)
   implicit val system = ActorSystem()
   implicit val ее = system.dispatcher
-  val api=new RestApi(system,requestTimeout(config)).routes
+  val api=new RestApi(system,requestTimeout).routes
   val bindingFuture: Future[ServerBinding] =
     Http().bindAndHandle(api, host, port)
 }
