@@ -1,8 +1,8 @@
 package TicketSeller
 import TicketSeller.Codec.{JsonCodec, UriDecoder}
-import TicketSeller.EventOperations.AccessLevel.AccessLevel
 import TicketSeller.EventOperations.EventOperations._
-import TicketSeller.EventOperations.{Role, Unauthorized, UserInfo}
+import TicketSeller.EventOperations.User.UserInfo
+import TicketSeller.EventOperations.{Role, Unauthorized}
 import akka.actor.{ActorRef, ActorSystem}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
@@ -43,8 +43,10 @@ class RestApi( system: ActorSystem, timeout: Timeout) extends BoxOfficeApi
   def authorizeRoute=pathPrefix("users"){
     pathEndOrSingleSlash{
       get{
-        entity(as[UserInfo]){
-            userInfo=>complete(authorizeUser(userInfo))
+        entity(as[UserInfo]) { userInfo => onSuccess(authorizeUser(userInfo)){
+          case CancelEventResponse(message, user)=>complete("User not Found")
+          case AuthorizeUserResponse(user) =>complete(user.userNickName)
+        }
         }
       }
     }
@@ -52,7 +54,7 @@ class RestApi( system: ActorSystem, timeout: Timeout) extends BoxOfficeApi
 
 
 
-  def routes:Route=eventsRoute~eventRoute
+  def routes:Route=eventsRoute~eventRoute~authorizeRoute
 }
 
 trait BoxOfficeApi{
@@ -63,17 +65,17 @@ trait BoxOfficeApi{
 
   def createBoxOffice():ActorRef
 
-  def getEvents[AL <: AccessLevel](user:Role[AL]): Future[EventResponse[AL]] =
-    boxOffice.ask(GetEvents(user)).mapTo[EventResponse[AL]]
+  def getEvents(user:Role): Future[EventResponse] =
+    boxOffice.ask(GetEvents(user)).mapTo[EventResponse]
 
-  def getEvent[AL <: AccessLevel](event: Either[String,Event],user:Role[AL]): Future[EventResponse[AL]] = {
+  def getEvent(event: Either[String,Event],user:Role): Future[EventResponse] = {
     event match {
-      case Right(value) => boxOffice.ask(GetEvent(value,user)).mapTo[EventResponse[AL]]
+      case Right(value) => boxOffice.ask(GetEvent(value,user)).mapTo[EventResponse]
       case Left(value) =>  Future{CancelEventResponse(value,user)}
     }
    }
-  def authorizeUser[AL <: AccessLevel](userInfo:UserInfo): Future[EventResponse[AL]] ={
-    boxOffice.ask(userInfo).mapTo[EventResponse[AL]]
+  def authorizeUser(userInfo:UserInfo): Future[EventResponse] /*: Future[EventResponse[AL]] */={
+    boxOffice.ask(userInfo).mapTo[EventResponse]
     /*userInfo match {
       case Some(userInfo) => boxOffice.ask(AuthorizeUserRequest(userInfo))
       case None =>

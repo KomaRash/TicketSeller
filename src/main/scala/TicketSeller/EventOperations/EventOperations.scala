@@ -14,17 +14,17 @@ package object EventOperations {
   case class Ticket(event:String,ticketId: Int,ticketType:TicketType)
 
 
-  sealed trait EventRequest[AL<:AccessLevel.AccessLevel]
-  case class GetEvent[AL<:AccessLevel.Anon](event: Event, user:Role[AL])extends EventRequest[AL]
-  case class GetEvents[AL<:AccessLevel.Anon](user:Role[AL])extends EventRequest[AL]
-  case class AuthorizeUserRequest[AL<:AccessLevel.Authorized](userInfo: UserInfo)extends EventRequest[AL]
+  sealed trait EventRequest
+  case class GetEvent(event: Event, user:Role)extends EventRequest
+  case class GetEvents(user:Role)extends EventRequest
+//  case class AuthorizeUserRequest[AL<:AccessLevel.Authorized](userInfo: UserInfo)extends EventRequest[AL]
 
-  sealed trait EventResponse[+AL<:AccessLevel.AccessLevel]
+  sealed trait EventResponse
 
-  case class CancelEventResponse[AL<:AccessLevel.Anon](message:String ="", user:Role[AL]) extends EventResponse[AL]
-  case class GetEventsResponse[AL<:AccessLevel.Anon](eventList:List[Event],user:Role[AL]) extends EventResponse[AL]
-  case class GetEventResponse[AL<:AccessLevel.Authorized](event: Event,user:Role[AL]) extends EventResponse[AL]
-
+  case class CancelEventResponse(message:String ="", user:Role) extends EventResponse
+  case class GetEventsResponse(eventList:List[Event],user:Role) extends EventResponse
+  case class GetEventResponse(event: Event,user:Role) extends EventResponse
+  case class AuthorizeUserResponse(user:User) extends EventResponse
 
   type Id=Int
   type TicketType=String

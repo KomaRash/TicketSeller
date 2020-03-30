@@ -1,7 +1,8 @@
 package TicketSeller.Codec
 
 import TicketSeller.EventOperations.EventOperations.{Event, EventDateTime, EventInfo}
-import TicketSeller.EventOperations.{Place, UserInfo}
+import TicketSeller.EventOperations.User.UserInfo
+import TicketSeller.EventOperations.Place
 import org.joda.time.LocalDateTime
 
 trait JsonCodec extends DateTimeCodec {

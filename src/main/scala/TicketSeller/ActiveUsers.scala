@@ -1,20 +1,20 @@
 package TicketSeller
 
-import TicketSeller.EventOperations.{User, UserInfo}
+import TicketSeller.EventOperations.User.UserInfo
 import akka.actor.{Actor, ActorRef, Props}
-import akka.pattern.ask
 import akka.util.Timeout
 object ActiveUsers {
   def property(implicit database:ActorRef): Props = Props(new ActiveUsers(database))
-
   def name="ActiveUsers"
 
 }
 class ActiveUsers(database:ActorRef) extends Actor with AuthorizeUserApi {
-
-  private val activeUserList=List[User]()
+  import akka.pattern.{ask, pipe}
+  //implicit val a=ExecutionContext.global
+  implicit val b=context.system.dispatcher
+//  private val activeUserList=List[User]()
   override def receive: Receive = {
-    case userInfo: UserInfo=>database.ask(userInfo).mapTo[Option[User[_]]]
+    case userInfo: UserInfo=> database.ask(userInfo) pipeTo sender()
   }
 
 

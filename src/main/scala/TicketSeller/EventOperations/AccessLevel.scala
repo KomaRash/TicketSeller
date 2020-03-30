@@ -1,3 +1,4 @@
+package TicketSeller.EventOperations
 
 
 object AccessLevel extends Enumeration {
@@ -7,4 +8,3 @@ object AccessLevel extends Enumeration {
   val Redactor:AL = Value(2,"Redactor")
   val Admin:AL = Value(3,"Admin")
 }
-AccessLevel.Anon.id

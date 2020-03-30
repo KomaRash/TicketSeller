@@ -1,6 +1,8 @@
 package TicketSeller
 
 import TicketSeller.EventOperations.EventOperations._
+import TicketSeller.EventOperations.User.UserInfo
+
 import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 import akka.event.EventStream
 import akka.util.Timeout
@@ -23,11 +25,12 @@ class BoxOffice(implicit timeout: Timeout,system:ActorSystem ) extends Actor {
   import akka.pattern.{ask, pipe}
  override def receive: Receive = {
 
-  case getEvents @(_: GetEvents[_] | _:GetEvent[_])=>
+  case getEvents @(_: GetEvents | _:GetEvent)=>
     database.ask(getEvents) pipeTo sender()
      //eventStream.publish(getEvents)
   /*case authorizeUser:AuthorizeUserRequest[_]=>activeUsers.ask(authorizeUser)*/
-  case eventInfo: EventInfo=>activeUsers.ask(eventInfo)
+  case info: UserInfo=>activeUsers.ask(info) pipeTo sender()
+
  }
 }
 

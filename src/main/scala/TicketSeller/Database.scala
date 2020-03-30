@@ -2,7 +2,8 @@ package TicketSeller
 
 import TicketSeller.Codec.DatabaseRowCoder
 import TicketSeller.EventOperations.EventOperations._
-import TicketSeller.EventOperations.UserInfo
+import TicketSeller.EventOperations.Unauthorized
+import TicketSeller.EventOperations.User.UserInfo
 import akka.actor.{Actor, Props}
 import scalikejdbc._ // for Functor import cats.syntax.functor.__
 object Database extends DatabaseRowCoder {
@@ -39,7 +40,11 @@ class Database() extends Actor{
       }
     }
     case GetEvents(user)=>sender() ! GetEventsResponse(getEvents,user)
-    case userInfo:UserInfo=>getUser(userInfo)
+    case userInfo:UserInfo=>
+      //println(userInfo)
+      val a=getUser(userInfo).map(AuthorizeUserResponse).getOrElse(CancelEventResponse("NotUser",Unauthorized))
+
+      sender() ! a
   }
 
 }
