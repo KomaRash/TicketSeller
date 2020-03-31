@@ -45,7 +45,7 @@ class RestApi( system: ActorSystem, timeout: Timeout) extends BoxOfficeApi
       get{
         entity(as[UserInfo]) { userInfo => onSuccess(authorizeUser(userInfo)){
           case CancelEventResponse(message, user)=>complete("User not Found")
-          case AuthorizeUserResponse(user) =>complete(user.userNickName)
+          case AuthorizeUserResponse(user) =>complete(user.userToken)
         }
         }
       }

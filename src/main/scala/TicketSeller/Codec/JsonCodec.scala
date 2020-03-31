@@ -1,7 +1,7 @@
 package TicketSeller.Codec
 
-import TicketSeller.EventOperations.EventOperations.{Event, EventDateTime, EventInfo}
-import TicketSeller.EventOperations.User.UserInfo
+import TicketSeller.EventOperations.EventOperations.{Event, EventInfo, TicketSellerDateTime}
+import TicketSeller.EventOperations.User.{UserInfo, UserToken}
 import TicketSeller.EventOperations.Place
 import org.joda.time.LocalDateTime
 
@@ -17,18 +17,19 @@ trait JsonCodec extends DateTimeCodec {
   implicit val eventInfoEncoder: Encoder[EventInfo] = deriveEncoder[EventInfo]
   implicit val placeEncoder: Encoder[Place] = deriveEncoder[Place]
   lazy implicit val localDateTimeEncoder: Encoder[LocalDateTime] = (a: LocalDateTime) => a.toString(datetimeFormat).asJson
-  lazy implicit val eventDateTimeEncoder: Encoder[EventDateTime] = deriveEncoder[EventDateTime]
-
+  lazy implicit val eventDateTimeEncoder: Encoder[TicketSellerDateTime] = deriveEncoder[TicketSellerDateTime]
+  lazy implicit val userTokenEncoder:Encoder[UserToken]=deriveEncoder[UserToken]
   //Decoders
   lazy implicit val eventDecoder: Decoder[Event] = deriveDecoder[Event].prepare(prepareDecoders("id")).
     prepare(prepareDecoders("eventInfo")).
     prepare(prepareDecoders("dateTime"))
   lazy implicit val eventInfoDecoder: Decoder[EventInfo] = deriveDecoder[EventInfo]
   lazy implicit val placeDecoder: Decoder[Place] = deriveDecoder[Place]
-  lazy implicit val localDateTimeDecoder: Decoder[EventDateTime] = (c: HCursor) => for {
+  lazy implicit val localDateTimeDecoder: Decoder[TicketSellerDateTime] = (c: HCursor) => for {
     dateTime <- c.downField("datetime").as[String].map(LocalDateTime.parse(_, datetimeFormat))
-  } yield EventDateTime(dateTime)
+  } yield TicketSellerDateTime(dateTime)
   lazy implicit val userInfoDecoder:Decoder[UserInfo]=deriveDecoder[UserInfo]
+  //lazy implicit val userTokenDecoder:Decoder[UserToken]=deriveDecoder[UserToken]
   private def prepareDecoder(json: Json)(fieldType: String)(cursor: ACursor): ACursor = {
     val field = cursor.downField(fieldType)
     if (field.failed) {

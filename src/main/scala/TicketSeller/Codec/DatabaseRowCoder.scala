@@ -1,7 +1,7 @@
 package TicketSeller.Codec
 
 import TicketSeller.EventOperations.AccessLevel.AL
-import TicketSeller.EventOperations.EventOperations.{Event, EventDateTime, EventInfo, Ticket}
+import TicketSeller.EventOperations.EventOperations.{Event, TicketSellerDateTime, EventInfo, Ticket}
 import TicketSeller.EventOperations.User.UserInfo
 import TicketSeller.EventOperations.{AccessLevel, Place, User}
 import cats.implicits._
@@ -22,7 +22,7 @@ trait DatabaseRowCoder {
         result.string("EventName"),
         None,
         None,
-        EventDateTime(result.get[LocalDateTime]("DATETIME")))
+        TicketSellerDateTime(result.get[LocalDateTime]("DATETIME")))
     def toPlaceWithoutId: () => Option[Place] = ()=>Option(
       Place( name=result.string("Name"),
         address=result.string("Address")))

@@ -7,10 +7,13 @@ package object EventOperations {
                     name:String,
                     eventInfo: Option[EventInfo]=None,
                     place:Option[Place]=None,
-                    dateTime:EventDateTime )
+                    dateTime:TicketSellerDateTime )
 
   case class EventInfo(/*tickets:Map[TicketType,Int],*/preview:Option[String])
-  case class EventDateTime(dateTime:LocalDateTime)
+  case class TicketSellerDateTime(dateTime:LocalDateTime){
+    def apply():LocalDateTime=dateTime
+  }
+
   case class Ticket(event:String,ticketId: Int,ticketType:TicketType)
 
 
