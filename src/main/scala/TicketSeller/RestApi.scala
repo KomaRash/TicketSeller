@@ -1,8 +1,8 @@
 package TicketSeller
 import TicketSeller.Codec.{JsonCodec, UriDecoder}
 import TicketSeller.EventOperations.EventOperations._
-import TicketSeller.EventOperations.User.UserInfo
-import TicketSeller.EventOperations.{Role, Unauthorized}
+import TicketSeller.EventOperations.User.{Token, UserInfo}
+import TicketSeller.EventOperations.{Role, Unauthorized, User}
 import akka.actor.{ActorRef, ActorSystem}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
@@ -44,9 +44,19 @@ class RestApi( system: ActorSystem, timeout: Timeout) extends BoxOfficeApi
     pathEndOrSingleSlash{
       get{
         entity(as[UserInfo]) { userInfo => onSuccess(authorizeUser(userInfo)){
-          case CancelEventResponse(message, user)=>complete("User not Found")
+          case CancelEventResponse(message, user)=>complete(message)
           case AuthorizeUserResponse(user) =>complete(user.userToken)
         }
+        }
+      }
+    }
+  }
+  def testTokenRoute=pathPrefix("users"/Segment){
+    token=>pathEndOrSingleSlash{
+      get{
+        onSuccess(userAuthentication(token) ){
+          case Some(user)=>complete(user.userNickName)
+          case None=>complete("Not Authificate")
         }
       }
     }
@@ -54,7 +64,10 @@ class RestApi( system: ActorSystem, timeout: Timeout) extends BoxOfficeApi
 
 
 
-  def routes:Route=eventsRoute~eventRoute~authorizeRoute
+  def routes:Route= eventsRoute~
+                    eventRoute~
+                    authorizeRoute~
+                    testTokenRoute
 }
 
 trait BoxOfficeApi{
@@ -80,6 +93,9 @@ trait BoxOfficeApi{
       case Some(userInfo) => boxOffice.ask(AuthorizeUserRequest(userInfo))
       case None =>
     }*/
+  }
+  def userAuthentication(token: Token)={
+    boxOffice.ask(token).mapTo[Option[User]]
   }
 
 

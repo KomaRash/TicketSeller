@@ -1,8 +1,8 @@
 package TicketSeller
 
 import java.util.UUID
-
-import TicketSeller.EventOperations.EventOperations.AuthorizeUserResponse
+import cats.implicits._
+import TicketSeller.EventOperations.EventOperations.{AuthorizeUserResponse, CancelEventResponse}
 import TicketSeller.EventOperations.User
 import TicketSeller.EventOperations.User.{Token, UserInfo, UserToken}
 import akka.actor.{Actor, ActorRef, Props}
@@ -18,6 +18,7 @@ object ActiveUsers {
 }
 class ActiveUsers(database:ActorRef) extends Actor with AuthorizeUserApi {
   import akka.pattern.{ask, pipe}
+
   private implicit val executor: ExecutionContextExecutor =context.system.dispatcher
   private val ActiveUserList: List[User] = List[User]()
   override def receive: Receive = onMessage(ActiveUserList)
@@ -26,7 +27,8 @@ class ActiveUsers(database:ActorRef) extends Actor with AuthorizeUserApi {
     case userInfo: UserInfo =>
       val userResponse = database.ask(userInfo).map{
         case authorizeUserResponse: AuthorizeUserResponse=> authorizeUserResponse.copy(
-          user=authorizeUserResponse.user.copy(userToken = Some(getUserToken)))
+          user=authorizeUserResponse.user.copy(userToken = getUserToken.some))
+        case cancelEventResponse: CancelEventResponse=>cancelEventResponse.copy(message = "User not authorize")
       }
       userResponse pipeTo sender() /*println(1)*/
       userResponse.mapTo[AuthorizeUserResponse].onComplete {
@@ -36,17 +38,21 @@ class ActiveUsers(database:ActorRef) extends Actor with AuthorizeUserApi {
           //userList.foreach(println)
 
       }
-    /*case userToken: UserToken=> userList.find(_.userToken.map) match {
-      case Some(value) =>
-      case None =>
-    }*/
+    case userToken: Token=>sender()! userList.find{
+      user=>user.
+            userToken.
+            exists{
+              _.valid(userToken)(refreshTokenTimeout)
+            }
+    }
 
   }
 }
 
 trait AuthorizeUserApi extends AuthorizeTimeout {
+  val refreshTokenTimeout:Timeout=userRefreshTokenTimeout
   implicit val timeout: Timeout =userAskTimeout
-  def getUserToken:UserToken=UserToken(generateToken,Some(generateToken),LocalDateTime.now())
+  def getUserToken:UserToken=UserToken(generateToken,generateToken.some,LocalDateTime.now().some)
   def generateToken: Token=UUID.randomUUID().toString
 
 }

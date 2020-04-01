@@ -25,10 +25,14 @@ case class User(
 }
 object User {
   type  Token=String
-  case class UserToken(accessToken: Token, refreshToken:Option[Token], time: LocalDateTime){
-     def eq(userToken: UserToken)(implicit timeout: Timeout): Boolean ={
-      accessToken==userToken.accessToken && new  Period(time,userToken.time).getSeconds<=timeout.duration.toSeconds
-    }
+  case class UserToken(accessToken: Token, refreshToken:Option[Token], time: Option[LocalDateTime]){
+     def valid(accessToken: Token)(implicit timeout: Timeout): Boolean ={
+       val period=new Period(time.get,LocalDateTime.now()).toStandardSeconds.getSeconds.toLong
+       println(period)
+       println(timeout.duration.toSeconds)
+      this.accessToken==accessToken &&   period<=timeout.duration.toSeconds
+
+     }
   }
 
   case class UserInfo(userMail: String, password: Option[String] = None)
