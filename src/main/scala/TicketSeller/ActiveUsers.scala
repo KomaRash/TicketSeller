@@ -1,14 +1,16 @@
 package TicketSeller
 
 import java.util.UUID
-import cats.implicits._
+
 import TicketSeller.EventOperations.EventOperations.{AuthorizeUserResponse, CancelEventResponse}
 import TicketSeller.EventOperations.User
 import TicketSeller.EventOperations.User.{Token, UserInfo, UserToken}
 import akka.actor.{Actor, ActorRef, Props}
 import akka.util.Timeout
+import cats.implicits._
 import org.joda.time.LocalDateTime
 
+import scala.annotation.tailrec
 import scala.concurrent.ExecutionContextExecutor
 import scala.util.{Failure, Success}
 object ActiveUsers {
@@ -38,12 +40,10 @@ class ActiveUsers(database:ActorRef) extends Actor with AuthorizeUserApi {
           //userList.foreach(println)
 
       }
-    case userToken: Token=>sender()! userList.find{
-      user=>user.
-            userToken.
-            exists{
-              _.valid(userToken)(refreshTokenTimeout)
-            }
+    case authenticateToken: Token=>sender()! {
+      val (currentUser,newUserList)=authenticateUser(userList)(refreshTokenTimeout,authenticateToken)
+      context.become(onMessage(newUserList))
+      currentUser
     }
 
   }
@@ -54,5 +54,25 @@ trait AuthorizeUserApi extends AuthorizeTimeout {
   implicit val timeout: Timeout =userAskTimeout
   def getUserToken:UserToken=UserToken(generateToken,generateToken.some,LocalDateTime.now().some)
   def generateToken: Token=UUID.randomUUID().toString
+  def authenticateUser(userList:List[User])
+                      (implicit refreshTokenTimeout: Timeout,accessToken: Token): (Option[User], List[User]) ={
+    @tailrec
+    def tailRecM(tailUserList:List[User],accUserList:List[User]=List[User]()):(Option[User],List[User])= {
+      if (tailUserList.isEmpty)
+        (None,accUserList)
+      else {
+        val currentUser = tailUserList.head
+        val (userOpt, current) = currentUser.confirmAccessToken(generateToken)(refreshTokenTimeout, accessToken)
+        if (!current)
+          tailRecM(tailUserList.tail, userOpt.toList ::: accUserList)
+        else
+          (userOpt, userOpt.toList ::: accUserList ::: tailUserList.tail)
+      }
+    }
+    if(userList.isEmpty)
+      (None,List())
+    else
+      tailRecM(userList)
+  }
 
 }

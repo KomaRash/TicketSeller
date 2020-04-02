@@ -31,8 +31,11 @@ libraryDependencies++=Seq(
  "mysql" % "mysql-connector-java" % "8.0.19",
   "ch.qos.logback"  %  "logback-classic"   % "1.2.3"
 )
-//Cats core
+//Cats
 libraryDependencies += "org.typelevel" %% "cats-core" % "2.1.0"
+libraryDependencies += "org.typelevel" %% "cats-kernel" % "2.1.0"
+libraryDependencies += "org.typelevel" %% "cats-macros" % "2.1.0"
+
 //add io.circle adapter akka-Json
 libraryDependencies += "de.heikoseeberger" % "akka-http-circe_2.13" % "1.31.0"
 val circeVersion = "0.12.3"

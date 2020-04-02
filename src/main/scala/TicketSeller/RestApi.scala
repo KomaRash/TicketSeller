@@ -55,7 +55,7 @@ class RestApi( system: ActorSystem, timeout: Timeout) extends BoxOfficeApi
     token=>pathEndOrSingleSlash{
       get{
         onSuccess(userAuthentication(token) ){
-          case Some(user)=>complete(user.userNickName)
+          case Some(user)=>complete(user.userToken)
           case None=>complete("Not Authificate")
         }
       }
