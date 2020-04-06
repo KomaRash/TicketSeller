@@ -18,7 +18,7 @@ case class User(
                                     userNickName: String,
                                     userInfo: Option[UserInfo]=None,
                                     userToken: Option[UserToken]=None,
-                                    accessLevel:AL=Authorized
+                                    private val accessLevel:AL=Authorized
                                   ) extends Role{
 
   def confirmAccessToken(newAccessToken:Token)(implicit timeout: Timeout, accessToken: Token): (Option[User], Boolean) = {
@@ -29,8 +29,14 @@ case class User(
   }
       override def userRole: AL = accessLevel
 }
-object User {
 
+/**
+ *  object user constraint info about all user
+ */
+object User {
+  /**
+   *  Authenticate token
+   */
   type Token = String
 
   case class UserToken(accessToken: Token, refreshToken:Option[Token], time: Option[LocalDateTime]){
@@ -46,6 +52,11 @@ object User {
 
   }
 
+  /**
+   *  Class constrains info about user for Authorize
+   * @param userMail -user mail address
+   * @param password -password for user account
+   */
   case class UserInfo(userMail: String, password: Option[String] = None)
 
 }

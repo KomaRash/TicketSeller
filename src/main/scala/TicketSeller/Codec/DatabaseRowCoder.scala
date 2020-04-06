@@ -23,7 +23,7 @@ trait DatabaseRowCoder {
      * def for extract info about Event from the database without
      * [[TicketSeller.EventOperations.Role]] and
      * [[TicketSeller.EventOperations.EventOperations.EventInfo]]
-     * @return `()=> Event`
+     * @return ()=> [[TicketSeller.EventOperations.Event]]
      */
     def toEventWithoutInfo: () => Event = ()=>
       Event(None,
@@ -39,17 +39,19 @@ trait DatabaseRowCoder {
     def toPlaceWithoutId: () => Option[Place] = ()=>Option(
       Place( name=result.string("Name"),
         address=result.string("Address")))
+
     def toEventWithPlace: () => Event = toEventWithoutInfo.map(_.copy(place = toPlaceWithoutId()))
     def toEventInfo: () => Option[EventInfo] = ()=>Option(EventInfo(result.stringOpt("Preview")))
     def toUserEventInfo: () => Event = toEventWithPlace.map(_.copy(eventInfo = toEventInfo ()))
 
     def toUserInfo=UserInfo(userMail=result.string("UserMail"))
 
+
     /**
-    *def toFullUserInfo=toUserInfo.copy(password=result.stringOpt("Password"))
+     *
      * extract info about UserRole from WrappedResultSet
- *
-     * @return userRole: [[Info.AccessLevel]]
+     *
+     * @return userRole: [[TicketSeller.EventOperations.Info.AccessLevel]]
      */
     def toUserRole:AL = Info.AccessLevel.withName(result.string("Role"))
 
@@ -58,6 +60,8 @@ trait DatabaseRowCoder {
      * @return user: [[TicketSeller.EventOperations.User]]
      */
     def toUser=User(result.string("UserNickName"),Option(result.toUserInfo),None,toUserRole)
+
+    def toFullUserInfo=toUserInfo.copy(password=result.stringOpt("Password"))
   }
 
 

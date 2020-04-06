@@ -3,7 +3,9 @@ package TicketSeller
 import akka.util.Timeout
 import com.typesafe.config.{Config, ConfigFactory}
 
-
+/**
+ * traits uses for get [[akka.util.Timeout]] from Config file
+ */
 trait ConfigLoadApi{
   def config: Config = ConfigFactory.load()
 }
