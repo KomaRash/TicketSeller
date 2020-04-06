@@ -1,6 +1,8 @@
-package TicketSeller.EventOperations
+package TicketSeller.EventOperations.Info
 
-
+/**
+ *  Object contains Access level parameter for users
+ */
 object AccessLevel extends Enumeration {
   type AL = Value
   val Anon:AL= Value(0,"Anon")

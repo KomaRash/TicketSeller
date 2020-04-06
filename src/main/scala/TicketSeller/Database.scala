@@ -1,11 +1,10 @@
 package TicketSeller
 
 import TicketSeller.Codec.DatabaseRowCoder
-import TicketSeller.EventOperations.EventOperations._
-import TicketSeller.EventOperations.Unauthorized
+import TicketSeller.EventOperations._
 import TicketSeller.EventOperations.User.UserInfo
 import akka.actor.{Actor, Props}
-import scalikejdbc._ // for Functor import cats.syntax.functor.__
+import scalikejdbc._
 object Database extends DatabaseRowCoder {
   import Main.config
   def name: String = "ticketsDatabase"
@@ -22,17 +21,22 @@ object Database extends DatabaseRowCoder {
 }
 class Database() extends Actor{
   import Database._
-  def getEvents= (sql""" select * from event""".map(_.toEventWithoutInfo()).list().apply())
+  def getEvents= sql""" select * from event""".
+                              map(_.toEventWithoutInfo()).list().apply()
   def getEvent(event: Event)= {
     sql""" select * from event natural join place where
-        EventName=${event.name} and DATETIME = ${event.dateTime.dateTime} """.map(_.toUserEventInfo()).single().apply()
+          EventName=${event.name} and
+          DATETIME = ${event.dateTime.dateTime} """.
+          map(_.toUserEventInfo()).single().apply()
 
 
   }
-  def getUser(userInfo: UserInfo) =sql"""SELECT * FROM users where UserMail=${userInfo.userMail} and Password=${userInfo.password}
-       """.map(_.toUser).single().apply()
+  def getUser(userInfo: UserInfo) =sql"""SELECT * FROM users
+                                       where UserMail=${userInfo.userMail} and
+                                       Password=${userInfo.password}""".
+                                        map(_.toUser).single().apply()
   override def receive: Receive = {
-  //  case CreateEvent(event,tickets,ticketType)=>sender()! addEvent(event,ticketType,tickets)
+
     case GetEvent(event,user)=>sender() ! {
       getEvent(event) match {
         case Some(value) => GetEventResponse(value, user)
@@ -40,11 +44,10 @@ class Database() extends Actor{
       }
     }
     case GetEvents(user)=>sender() ! GetEventsResponse(getEvents,user)
-    case userInfo:UserInfo=>
-      //println(userInfo)
-      val a=getUser(userInfo).map(AuthorizeUserResponse).getOrElse(CancelEventResponse("NotUser",Unauthorized))
 
-      sender() ! a
+    case userInfo:UserInfo=>
+      val authorizeResponse=getUser(userInfo).map(AuthorizeUserResponse).getOrElse(CancelEventResponse("NotUser",Unauthorized))
+      sender() ! authorizeResponse
   }
 
 }

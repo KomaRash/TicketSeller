@@ -1,9 +1,10 @@
 package TicketSeller.Codec
 
-import TicketSeller.EventOperations.AccessLevel.AL
-import TicketSeller.EventOperations.EventOperations.{Event, EventInfo, TicketSellerDateTime}
+import TicketSeller.EventOperations.Info.AccessLevel.AL
+import TicketSeller.EventOperations.EventOperations.{ EventInfo, TicketSellerDateTime}
+import TicketSeller.EventOperations.Info.Place
 import TicketSeller.EventOperations.User.UserInfo
-import TicketSeller.EventOperations.{AccessLevel, Place, User}
+import TicketSeller.EventOperations.{ Event, Info, User}
 import cats.implicits._
 import org.joda.time.LocalDateTime
 import scalikejdbc.WrappedResultSet
@@ -33,7 +34,7 @@ trait DatabaseRowCoder {
 
     /**
      * extract info about PLace for Event from the database
-     * @return Option  [[TicketSeller.EventOperations.Place]]
+     * @return Option  [[TicketSeller.EventOperations.Info.Place]]
      */
     def toPlaceWithoutId: () => Option[Place] = ()=>Option(
       Place( name=result.string("Name"),
@@ -45,11 +46,12 @@ trait DatabaseRowCoder {
     def toUserInfo=UserInfo(userMail=result.string("UserMail"))
 
     /**
-    def toFullUserInfo=toUserInfo.copy(password=result.stringOpt("Password"))
+    *def toFullUserInfo=toUserInfo.copy(password=result.stringOpt("Password"))
      * extract info about UserRole from WrappedResultSet
-     * @return userRole: [[TicketSeller.EventOperations.AccessLevel]]
+ *
+     * @return userRole: [[Info.AccessLevel]]
      */
-    def toUserRole:AL =AccessLevel.withName(result.string("Role"))
+    def toUserRole:AL = Info.AccessLevel.withName(result.string("Role"))
 
     /**
      * extract from WrappedResultSet about User without Password

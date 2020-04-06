@@ -16,10 +16,10 @@ trait TicketSellerTimeout extends ConfigLoadApi {
   }
 }
 trait RequestTimeout extends TicketSellerTimeout {
-  def requestTimeout: Timeout =super.timeout("akka.http.server.request-timeout")
+  def requestTimeout: Timeout =timeout("akka.http.server.request-timeout")
 }
 trait AuthorizeTimeout extends TicketSellerTimeout{
-  def userAskTimeout: Timeout =super.timeout("Users.userAskTime")
-  def userRefreshTokenTimeout: Timeout = super.timeout("Users.refreshTokenTime")
+  def userAskTimeout: Timeout =timeout("Users.userAskTime")
+  def userRefreshTokenTimeout: Timeout = timeout("Users.refreshTokenTime")
 }
 

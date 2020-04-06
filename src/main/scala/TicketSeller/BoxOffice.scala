@@ -1,27 +1,24 @@
 package TicketSeller
 
-import TicketSeller.EventOperations.EventOperations._
 import TicketSeller.EventOperations.User.{Token, UserInfo}
-import akka.actor.{Actor, ActorRef, ActorSystem, Props}
+import TicketSeller.EventOperations._
+import akka.actor.{Actor, ActorRef, Props}
 import akka.event.EventStream
 import akka.util.Timeout
 
 import scala.concurrent.ExecutionContext
 object BoxOffice {
 def name="TicketSeller.BoxOffice"
-def property(implicit system:ActorSystem,timeout: Timeout)=Props(new BoxOffice())
+def property(implicit timeout: Timeout)=Props(new BoxOffice())
   implicit val ec = ExecutionContext.global
-  /*
-  implicit val eventSemigroup: Semigroup[Event] = (x: Event, y: Event) =>
-   Event(x.name, x.eventId, x.eventInfo |+| y.eventInfo)*/
 }
-class BoxOffice(implicit timeout: Timeout,system:ActorSystem ) extends Actor {
- implicit lazy val database: ActorRef =context.actorOf(Database.property,Database.name)
- val activeUsers:ActorRef=context.actorOf(ActiveUsers.property,ActiveUsers.name)
-  lazy val eventStream: EventStream =system.eventStream
-  //eventStream.subscribe(activeUsers,classOf[EventRequest[Anon]])
-  import BoxOffice._
-  import akka.pattern.{ask, pipe}
+class BoxOffice(implicit timeout: Timeout) extends Actor {
+ import BoxOffice._
+ import akka.pattern.{ask, pipe}
+ lazy implicit val database: ActorRef =context.actorOf(Database.property,Database.name)
+ lazy val activeUsers:ActorRef=context.actorOf(ActiveUsers.property,ActiveUsers.name)
+ lazy val eventStream: EventStream =context.system.eventStream
+ //eventStream.subscribe(activeUsers,classOf[EventRequest[Anon]])
  override def receive: Receive = {
 
   case getEvents @(_: GetEvents | _:GetEvent)=>

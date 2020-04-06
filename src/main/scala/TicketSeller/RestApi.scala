@@ -1,8 +1,7 @@
 package TicketSeller
 import TicketSeller.Codec.{JsonCodec, UriDecoder}
-import TicketSeller.EventOperations.EventOperations._
 import TicketSeller.EventOperations.User.{Token, UserInfo}
-import TicketSeller.EventOperations.{Role, Unauthorized, User}
+import TicketSeller.EventOperations.{AuthorizeUserResponse, CancelEventResponse, Event, EventResponse, GetEvent, GetEventResponse, GetEvents, GetEventsResponse, Role, Unauthorized, User}
 import akka.actor.{ActorRef, ActorSystem}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
@@ -15,16 +14,17 @@ import scala.concurrent.{ExecutionContext, Future}
 class RestApi( system: ActorSystem, timeout: Timeout) extends BoxOfficeApi
                                                       with JsonCodec
                                                       with UriDecoder {
-  override implicit def executionContext: ExecutionContext = system.dispatcher
+
+  override implicit def executionContext: ExecutionContext =system.dispatcher
   override implicit def requestTimeout: Timeout = timeout
-  override def createBoxOffice(): ActorRef =system.actorOf(BoxOffice.property(system,requestTimeout),BoxOffice.name)
+  override def createBoxOffice(): ActorRef =system.actorOf(BoxOffice.property(requestTimeout),BoxOffice.name)
 
   def eventsRoute=pathPrefix("events") {
     pathEndOrSingleSlash {
       get {
         onSuccess(getEvents(Unauthorized)) {
-          case GetEventsResponse(eventList,user) => complete(eventList)
-          case CancelEventResponse(message,user) => complete(message)
+          case GetEventsResponse(eventList,_) => complete(eventList)
+          case CancelEventResponse(message,_) => complete(message)
         }
       }
     }
@@ -44,7 +44,7 @@ class RestApi( system: ActorSystem, timeout: Timeout) extends BoxOfficeApi
     pathEndOrSingleSlash{
       get{
         entity(as[UserInfo]) { userInfo => onSuccess(authorizeUser(userInfo)){
-          case CancelEventResponse(message, user)=>complete(message)
+          case CancelEventResponse(message, _)=>complete(message)
           case AuthorizeUserResponse(user) =>complete(user.userToken)
         }
         }
@@ -56,7 +56,7 @@ class RestApi( system: ActorSystem, timeout: Timeout) extends BoxOfficeApi
       get{
         onSuccess(userAuthentication(token) ){
           case Some(user)=>complete(user.userToken)
-          case None=>complete("Not Authificate")
+          case None=>complete("Not Authenticate")
         }
       }
     }
@@ -87,14 +87,10 @@ trait BoxOfficeApi{
       case Left(value) =>  Future{CancelEventResponse(value,user)}
     }
    }
-  def authorizeUser(userInfo:UserInfo): Future[EventResponse] /*: Future[EventResponse[AL]] */={
+  def authorizeUser(userInfo:UserInfo): Future[EventResponse] ={
     boxOffice.ask(userInfo).mapTo[EventResponse]
-    /*userInfo match {
-      case Some(userInfo) => boxOffice.ask(AuthorizeUserRequest(userInfo))
-      case None =>
-    }*/
   }
-  def userAuthentication(token: Token)={
+  def userAuthentication(token: Token): Future[Option[User]] ={
     boxOffice.ask(token).mapTo[Option[User]]
   }
 

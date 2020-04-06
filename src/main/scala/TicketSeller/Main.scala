@@ -14,7 +14,7 @@ object Main extends App  with RequestTimeout
   val port = config.getInt("http.port")
     println(port)
   implicit val system = ActorSystem()
-  implicit val ее = system.dispatcher
+  implicit val dispatcher = system.dispatcher
   val api=new RestApi(system,requestTimeout).routes
   val bindingFuture: Future[ServerBinding] =
     Http().bindAndHandle(api, host, port)
