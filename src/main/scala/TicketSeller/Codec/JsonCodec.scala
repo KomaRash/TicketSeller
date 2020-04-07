@@ -1,6 +1,6 @@
 package TicketSeller.Codec
 
-import TicketSeller.EventOperations.Event
+import TicketSeller.EventOperations.{Event, RefreshToken}
 import TicketSeller.EventOperations.EventOperations.{EventInfo, TicketSellerDateTime}
 import TicketSeller.EventOperations.Info.Place
 import TicketSeller.EventOperations.User.{UserInfo, UserToken}
@@ -47,6 +47,9 @@ trait JsonCodec extends DateTimeCodec {
    *  Implicit decoders for Role classes
    */
   lazy implicit val userInfoDecoder:Decoder[UserInfo]=deriveDecoder[UserInfo]
+
+
+  lazy implicit val refreshTokenRequest:Decoder[RefreshToken]=deriveDecoder[RefreshToken]
 
   private def prepareDecoder(json: Json)(fieldType: String)(cursor: ACursor): ACursor = {
     val field = cursor.downField(fieldType)

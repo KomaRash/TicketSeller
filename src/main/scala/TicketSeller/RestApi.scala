@@ -1,7 +1,7 @@
 package TicketSeller
 import TicketSeller.Codec.{JsonCodec, UriDecoder}
-import TicketSeller.EventOperations.User.{Token, UserInfo}
-import TicketSeller.EventOperations.{AuthorizeUserResponse, CancelEventResponse, Event, EventResponse, GetEvent, GetEventResponse, GetEvents, GetEventsResponse, Role, Unauthorized, User}
+import TicketSeller.EventOperations.User.{Token, UserInfo, UserToken}
+import TicketSeller.EventOperations.{AuthorizeUserResponse, CancelEventResponse, Event, EventResponse, GetEvent, GetEventResponse, GetEvents, GetEventsResponse, RefreshToken, Role, Unauthorized, User}
 import akka.actor.{ActorRef, ActorSystem}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
@@ -51,6 +51,21 @@ class RestApi( system: ActorSystem, timeout: Timeout) extends BoxOfficeApi
       }
     }
   }
+  def refreshTokenRoute=pathPrefix("refresh"){
+    {
+      pathEndOrSingleSlash{
+        get{
+          entity(as[RefreshToken]){
+            tokens=>onSuccess(refreshToken(tokens)){
+              case value=>complete(value)
+            }
+
+          }
+        }
+      }
+    }
+  }
+
   def testTokenRoute=pathPrefix("users"/Segment){
     token=>pathEndOrSingleSlash{
       get{
@@ -67,7 +82,8 @@ class RestApi( system: ActorSystem, timeout: Timeout) extends BoxOfficeApi
   def routes:Route= eventsRoute~
                     eventRoute~
                     authorizeRoute~
-                    testTokenRoute
+                    testTokenRoute~
+                    refreshTokenRoute
 }
 
 trait BoxOfficeApi{
@@ -93,6 +109,9 @@ trait BoxOfficeApi{
   def userAuthentication(token: Token): Future[Option[User]] ={
     boxOffice.ask(token).mapTo[Option[User]]
   }
+  def refreshToken(refreshToken: RefreshToken): Future[Option[UserToken]] =boxOffice.
+    ask(refreshToken).
+    mapTo[Option[UserToken]]
 
 
 }

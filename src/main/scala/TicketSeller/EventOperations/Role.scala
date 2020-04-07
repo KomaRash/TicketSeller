@@ -21,13 +21,22 @@ case class User(
                                     private val accessLevel:AL=Authorized
                                   ) extends Role{
 
-  def confirmAccessToken(newAccessToken:Token)(implicit timeout: Timeout, accessToken: Token): (Option[User], Boolean) = {
+  def confirmAccessToken(newAccessToken:Token)
+                        (implicit timeout: Timeout,
+                         accessToken: Token): (Option[User], Boolean) = {
     if (!userToken.exists(_.validTime)) (None,false)
     else
-      if(userToken.exists(_.validAccessToken)) (this.copy(userToken = userToken.map(_.copy(accessToken=newAccessToken))).some,true)
-    else (this.some,false)
+      if(userToken.exists(_.validAccessToken))
+       (this.copy(userToken = userToken.map(_.copy(accessToken=newAccessToken))).some,true)
+      else (this.some,false)
   }
       override def userRole: AL = accessLevel
+  def updateRefreshToken(newUserToken:UserToken,refreshToken: RefreshToken): (Option[User], Boolean) ={
+    if(userToken.exists(_.validToken(refreshToken)))
+      (this.copy(userToken=newUserToken.some).some,true)
+    else
+      (this.some,false)
+  }
 }
 
 /**
@@ -46,9 +55,10 @@ object User {
          getSeconds.
          toLong
        }
-      def validAccessToken(implicit timeout: Timeout, accessToken: Token): Boolean = (this.accessToken==accessToken)
+      def validAccessToken(implicit accessToken: Token): Boolean = (this.accessToken==accessToken)
       def validTime(implicit timeout: Timeout, accessToken: Token): Boolean =userTimePeriod<=timeout.duration.toSeconds
-
+      def validToken(refreshToken: RefreshToken):Boolean=validAccessToken(refreshToken.accessToken) &&
+        this.refreshToken.contains(refreshToken.refreshToken)
 
   }
 

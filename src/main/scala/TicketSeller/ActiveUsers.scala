@@ -2,8 +2,8 @@ package TicketSeller
 
 import java.util.UUID
 
-import TicketSeller.EventOperations.{AuthorizeUserResponse, CancelEventResponse, User}
 import TicketSeller.EventOperations.User.{Token, UserInfo, UserToken}
+import TicketSeller.EventOperations.{AuthorizeUserResponse, CancelEventResponse, RefreshToken, User}
 import akka.actor.{Actor, ActorRef, Props}
 import akka.util.Timeout
 import cats.implicits._
@@ -18,13 +18,14 @@ object ActiveUsers {
 
 }
 class ActiveUsers(database:ActorRef) extends Actor with AuthorizeUserApi {
-  import akka.pattern.{ask, pipe}
+  import akka.pattern.{ask,pipe}
 
   private implicit val executor: ExecutionContextExecutor =context.system.dispatcher
   private val ActiveUserList: List[User] = List[User]()
   override def receive: Receive = onMessage(ActiveUserList)
 
-  private def onMessage(userList: List[User]): Receive = {
+
+  private def onMessage(implicit userList: List[User]): Receive = {
     case userInfo: UserInfo =>
       val userResponse = database.ask(userInfo).map{
         case authorizeUserResponse: AuthorizeUserResponse=> authorizeUserResponse.copy(
@@ -43,13 +44,32 @@ class ActiveUsers(database:ActorRef) extends Actor with AuthorizeUserApi {
       context.become(onMessage(newUserList))
       currentUser
     }
-
+    case  refreshToken: RefreshToken=>sender()!{
+      val (userTokenOpt,updateUserList)=refreshUserToken(refreshToken)
+      context.become(onMessage(updateUserList))
+      userTokenOpt}
   }
 }
 
 trait AuthorizeUserApi extends AuthorizeTimeout {
   val refreshTokenTimeout:Timeout=userRefreshTokenTimeout
   implicit val timeout: Timeout =userAskTimeout
+  def refreshUserToken(refreshToken: RefreshToken)(implicit users:List[User]): (Option[UserToken],List[User])={
+    @tailrec
+    def findAndUpdateRefreshToken(accUserList:List[User],userList:List[User]): (Option[UserToken],List[User]) ={
+      if(userList.isEmpty)
+        (None,accUserList)
+      else{
+        val currentUser=userList.head
+        val (currentUserOpt,isValid)=currentUser.updateRefreshToken(getUserToken,refreshToken)
+        if(isValid)
+          (currentUserOpt.get.userToken,currentUserOpt.toList ::: accUserList ::: userList.tail)
+        else
+          findAndUpdateRefreshToken(currentUser::accUserList,userList.tail)
+      }
+    }
+    findAndUpdateRefreshToken(List(),users)
+  }
   def getUserToken:UserToken=UserToken(generateToken,generateToken.some,LocalDateTime.now().some)
   def generateToken:Token=UUID.randomUUID().toString
   def authenticateUser(userList:List[User])
