@@ -1,18 +1,10 @@
-create table tickets
-(
-    TicketId      int auto_increment
-        primary key,
-    EventId       int not null,
-    UserId        int null,
-    FreeTicketsId int not null,
-    constraint FreeTickets_fk
-        foreign key (FreeTicketsId) references freetickets (FreeTicketsId),
-    constraint UserFk
-        foreign key (UserId) references users (UserId),
-    constraint tickets_ibfk_1
-        foreign key (EventId) references event (EventId)
+CREATE TABLE tickets(
+                        ticketsId int not null primary key,
+                        userId int default null,
+                        eventId int not null,
+                        ticketType varchar(30) not null,
+                        constraint User_tickets_fk
+                            foreign key (UserId) references users (UserId),
+                        constraint Event_tickets_fk
+                            foreign key (eventId) references event(EventId)
 );
-
-create index EventId
-    on tickets (EventId);
-

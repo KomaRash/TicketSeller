@@ -21,13 +21,19 @@ object Database extends DatabaseRowCoder {
 }
 class Database() extends Actor{
   import Database._
+  import EventOperations.equalsEventSemigroup
+  import cats.implicits._
   def getEvents= sql""" select * from event""".
                               map(_.toEventWithoutInfo()).list().apply()
   def getEvent(event: Event)= {
-    sql""" select * from event natural join place where
-          EventName=${event.name} and
-          DATETIME = ${event.dateTime.dateTime} """.
-          map(_.toUserEventInfo()).single().apply()
+    sql"""select * ,count(*) as Tickets from tickets as t left join
+            (select * from event as ev natural join place as p where
+                ev.EventName=${event.name} and
+                ev.DATETIME = ${event.dateTime.dateTime})
+            as events on (t.eventId=events.EventId )
+            group by ticketType,t.userId
+                having t.userId is null;""".
+      map(_.toEventWithEventInfo()).list().apply().reduceOption{(x,y)=> x |+| y}
 
 
   }

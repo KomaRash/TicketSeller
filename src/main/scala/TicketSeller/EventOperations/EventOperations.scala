@@ -8,10 +8,16 @@ import org.joda.time.LocalDateTime
  *
  */
 package object EventOperations {
-  case class EventInfo(/*tickets:Map[TicketType,Int],*/preview:Option[String])
+  case class EventInfo(tickets:Map[TicketType,Int]=Map(),preview:Option[String])
   case class TicketSellerDateTime(dateTime:LocalDateTime){
     def apply():LocalDateTime=dateTime
   }
+  import cats.Semigroup
+  import cats.implicits._
+  implicit val equalsEventSemigroup: Semigroup[Event] = (x: Event, y: Event) =>
+     x.copy(eventInfo = x.eventInfo |+| y.eventInfo)
+    implicit val eventInfoSemigroup:Semigroup[EventInfo]=(x: EventInfo, y: EventInfo)=>
+      x.copy(tickets=x.tickets |+| y.tickets )
 
   case class Ticket(event:String,ticketId: Int,ticketType:TicketType)
 

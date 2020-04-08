@@ -56,10 +56,7 @@ class RestApi( system: ActorSystem, timeout: Timeout) extends BoxOfficeApi
       pathEndOrSingleSlash{
         get{
           entity(as[RefreshToken]){
-            tokens=>onSuccess(refreshToken(tokens)){
-              case value=>complete(value)
-            }
-
+            tokens=>onSuccess(refreshToken(tokens))(value => complete(value))
           }
         }
       }
@@ -76,8 +73,6 @@ class RestApi( system: ActorSystem, timeout: Timeout) extends BoxOfficeApi
       }
     }
   }
-
-
 
   def routes:Route= eventsRoute~
                     eventRoute~

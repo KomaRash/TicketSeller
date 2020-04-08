@@ -23,3 +23,4 @@ implicit val eqFoo: Eq[Foo] = Eq.fromUniversalEquals
 //Foo(10, "") === Option(Foo(10, ""))
 // res4: Boolean = true
 Foo(10, "").some.exists(f=>f.equals(Foo(10, "")))
+Map("fooo"->123332)

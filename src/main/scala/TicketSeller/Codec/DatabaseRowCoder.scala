@@ -4,7 +4,7 @@ import TicketSeller.EventOperations.Info.AccessLevel.AL
 import TicketSeller.EventOperations.EventOperations.{ EventInfo, TicketSellerDateTime}
 import TicketSeller.EventOperations.Info.Place
 import TicketSeller.EventOperations.User.UserInfo
-import TicketSeller.EventOperations.{ Event, Info, User}
+import TicketSeller.EventOperations._
 import cats.implicits._
 import org.joda.time.LocalDateTime
 import scalikejdbc.WrappedResultSet
@@ -41,8 +41,10 @@ trait DatabaseRowCoder {
         address=result.string("Address")))
 
     def toEventWithPlace: () => Event = toEventWithoutInfo.map(_.copy(place = toPlaceWithoutId()))
-    def toEventInfo: () => Option[EventInfo] = ()=>Option(EventInfo(result.stringOpt("Preview")))
-    def toUserEventInfo: () => Event = toEventWithPlace.map(_.copy(eventInfo = toEventInfo ()))
+    def toEventInfo: () => Option[EventInfo] = ()=>EventInfo(
+      Map(result.string("ticketType")-> result.int("Tickets")),
+      result.stringOpt("Preview")).some
+    def toEventWithEventInfo: () => Event = toEventWithPlace.map(_.copy(eventInfo = toEventInfo ()))
 
     def toUserInfo=UserInfo(userMail=result.string("UserMail"))
 
